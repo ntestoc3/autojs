@@ -24,7 +24,7 @@ function click_bounds(obj) {
 }
 
 function get_task() {
-    sleep(3000*speed);
+    sleep(3000 * speed);
     var obj = text("去完成").findOnce();
     var ts = obj.parent().children();
     for (var i = 0; i < ts.length; i += 4) {
@@ -39,6 +39,9 @@ function get_task() {
             log("跳过商圈!");
             continue;
         }
+        if (target.text().includes("已完")) {
+            continue;
+        }
         return {
             title: title,
             desc: desc,
@@ -51,35 +54,76 @@ function get_task() {
 var act = desc("浮层活动");
 if (act != null) {
     log("正在自动进入活动页面");
-    click_bounds(act.findOne());
-    click_bounds(act.findOne());
-    sleep(3000 * speed);
+    click_bounds(act.findOne())
+    sleep(1000 * speed);
+    if (act.exists()) {
+        click_bounds(act.findOne());
+    }
+    sleep(3000 * speed);;
 } else {
     log("正在等待进入活动页面");
     log("请手动进入活动页面");
 }
 text("领金币").findOne().click();
 
-var t = get_task();
-var i = 1;
+var i = 0;
 
-while (t != null) {
+while (true) {
+    var t = get_task();
+    if (t == null) {
+        break;
+    }
+    i++;
     log("开始第" + i + "次任务!");
-    log("开始任务:", t.title);
+    log("开始任务:", t.title, "desc:", t.desc);
     t.target.click();
-    if (t.desc.includes("8秒")) {
+    if (t.desc.includes('8秒')) {
         log("浏览并等待8秒...")
         swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
         sleep(5000 * speed);
         swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
         sleep(5000 * speed);
         textContains("获得").findOne(1500 * speed);
+    } else if (t.desc.includes('浏览５个商品')) {
+        t.target.click();
+        sleep(3000 * speed);
+        var shops = textContains(".jpg").findOne().parent().parent().parent().children();
+        for (var i = 0; i < 5; i++) {
+            shops[i].show();
+            sleep(1000 * speed);
+            click_bounds(shops[i]);
+            sleep(1000 * speed);
+            back();
+            sleep(1000 * speed);
+        }
+    } else if (t.desc.includes('成功加购')) {
+        log("加购操作...")
+        t.target.click();
+        sleep(3000 * speed);
+        var adds = idContains("jmdd-react-smash").find()
+        for (var i = 0; i < 5; i++) {
+            adds[i].click();
+            sleep(1000 * speed);
+        }
+        back();
+        sleep(1000 * speed);
+    } else if (t.desc.includes('成功入会')) {
+        t.target.click();
+        sleep(3000 * speed);
+        if (text("去完成").exists()) {
+            log("已入会");
+            continue;
+        }
+        textContains("确认授权并加入").findOne().click();
+        sleep(5000 * speed);
     } else {
         log("等待...")
         sleep(1000 * speed);
     }
-    back();
-    t = get_task();
+    while (!text("去完成").exists()) {
+        back();
+        sleep(3000 * speed);
+    }
 }
 
 log("over!");
