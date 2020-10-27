@@ -78,7 +78,7 @@ function get_task() {
     sleep(3000 * speed);
     var obj = text("去完成").findOnce();
     var ts = obj.parent().parent().children();
-    for (var i = 1; i < ts.length; i++) {
+    for (let i = 1; i < ts.length; i++) {
         let view = ts[i].children();
         let title = view[0].child(0).text()
         let target = view[1];
