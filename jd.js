@@ -154,4 +154,13 @@ while (true) {
     }
 }
 
+var ts = textContains("寻宝箱").findOne().parent().child(2).children()
+log("待开宝箱:", ts.length, "个")
+for (let i = 0; i<ts.length; i++) {
+    log("宝箱",i)
+    ts[i].click()
+    sleep(2000*speed)
+    back()
+    sleep(2000*speed)
+}
 log("over!");

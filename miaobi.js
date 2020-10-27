@@ -8,7 +8,8 @@
  * 1021晚上发现淘宝增加了脚本检测 可能喵币只有1/100奖励了
  */
 
-var skip_titles = ["邀请", "开通", "农场施肥"]
+var skip_titles = ["邀请", "开通", "农场施肥", "开卡"]
+var task_names = ["去完成", "去浏览", "去观看"]
 var height = device.height;
 var width = device.width;
 setScreenMetrics(width, height);
@@ -54,18 +55,20 @@ launch("com.taobao.taobao");
 log("等待5秒...如有多开请尽快手动选择进入");
 sleep(5000 * speed);
 
-var act = descContains("主互动");
-if (act != null) {
-    log("正在自动进入活动页面");
-    act.click();
-    sleep(3000 * speed);
-} else {
-    log("正在等待进入吸猫活动页面");
-    log("请手动进入活动页面");
+if (!className("android.widget.Button").text("赚喵币").exists()) {
+    var act = descContains("主互动");
+    if (act != null) {
+        log("正在自动进入活动页面");
+        act.click();
+        sleep(3000 * speed);
+    } else {
+        log("正在等待进入吸猫活动页面");
+        log("请手动进入活动页面");
+    }
+    className("android.widget.Button").text("赚喵币").waitFor()
+    sleep(1000);
 }
 
-className("android.widget.Button").text("赚喵币").waitFor()
-sleep(1000);
 if (!textContains("累计任务奖励").exists()) {
     className("android.widget.Button").text("赚喵币").findOne().click();
     log("进入活动成功");
@@ -93,11 +96,15 @@ function get_task() {
         if (skip) {
             continue;
         }
-        if (target.text().includes('去完成')) {
-            return {
-                title: title,
-                target: target
-            };
+        for (let j = 0; j < task_names.length; j++) {
+            if (target.text().includes(task_names[j])) {
+                return {
+                    task: target.text(),
+                    title: title,
+                    target: target
+                };
+            }
+
         }
     }
     return null;
@@ -119,7 +126,9 @@ while (true) {
         continue;
     }
 
-    if (id("taolive_follow_text").exists() || textContains("赚金币").exists()) {
+    if (t.task == "去观看") {
+        sleep(20000 * speed);
+    } else if (id("taolive_follow_text").exists() || textContains("赚金币").exists()) {
         sleep(15000 * speed);
     } else {
         swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
