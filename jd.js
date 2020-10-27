@@ -1,8 +1,36 @@
 
-speed = 1
+var speed = 1
 var height = device.height;
 var width = device.width;
 setScreenMetrics(width, height);
+
+menu: while (true) {
+    var choose = dialogs.select("选择脚本速度", "干就完了，给我上最快的", "网速不太好，别整太快了", "手机和网速都不咋滴", "我太难了，整个最慢的叭");
+    switch (choose) {
+        case -1:
+            toast("请选择");
+            continue menu;
+        case 0:
+            toast("牛批啊，火箭已准备就绪");
+            speed = 0.75;
+            break menu;
+        case 1:
+            toast("慢慢来，稳中求胜");
+            speed = 1;
+            break menu;
+        case 2: ;
+            toast("老铁666，自行车发车啦");
+            speed = 1.5;
+            break menu;
+        case 3:
+            toast("村通网，莫得办法")
+            speed = 2;
+            break menu;
+
+        default:
+            break;
+    }
+}
 
 console.show();
 try {
