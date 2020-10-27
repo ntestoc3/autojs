@@ -8,14 +8,12 @@
  * 1021晚上发现淘宝增加了脚本检测 可能喵币只有1/100奖励了
  */
 
-var i = 0;
-var taskList = ['去浏览', '去搜索', '去观看', '去看看', '去完成'];
+var skip_titles = ["邀请", "开通", "农场施肥"]
 var height = device.height;
 var width = device.width;
 setScreenMetrics(width, height);
 var speed = 1;
 
-dialogs.alert("请确认无障碍和悬浮窗权限已开启,感谢使用,\n作者:ROCEYS\n仅供学习参考, B站同名");
 menu: while (true) {
     var choose = dialogs.select("选择脚本速度", "干就完了，给我上最快的", "网速不太好，别整太快了", "手机和网速都不咋滴", "我太难了，整个最慢的叭");
     switch (choose) {
@@ -30,12 +28,12 @@ menu: while (true) {
             toast("慢慢来，稳中求胜");
             speed = 1;
             break menu;
-        case 2:
+        case 2: ;
             toast("老铁666，自行车发车啦");
             speed = 1.5;
             break menu;
         case 3:
-            toast("村通网，莫得办法");
+            toast("村通网，莫得办法")
             speed = 2;
             break menu;
 
@@ -76,97 +74,67 @@ sleep(1500 * speed);
 if (!textContains("签到").exists()) { log("已签到"); }
 sleep(1500 * speed);
 
-var k = 0;
-taskList.forEach(task => {
-    while (textContains(task).exists()) {
-        if (k > 0) {
-            log("邀请任务需手动完成！");
-            break;
+function get_task() {
+    sleep(3000 * speed);
+    var obj = text("去完成").findOnce();
+    var ts = obj.parent().parent().children();
+    for (var i = 1; i < ts.length; i++) {
+        let view = ts[i].children();
+        let title = view[0].child(0).text()
+        let target = view[1];
+        let skip = false;
+        for (let j = 0; j < skip_titles.length; j++) {
+            if (title.includes(skip_titles[j])) {
+                log("跳过", title);
+                skip = true;
+                break;
+            }
         }
-        log("开始做第" + (i + 1) + "次任务！");
-        var a = text(task).findOnce();
-        switch (task) {
-            case '去完成':
-                var ts = text(task).find();
-                var r = null;
-                for (var idx = 0; idx < ts.length; idx++) {
-                    var task_desc = ts[idx].parent().child(0).child(0).text();
-                    if (task_desc.includes("邀请")) {
-                        log("跳过邀请!");
-                        continue;
-                    }
-                    if (task_desc.includes("开通")) {
-                        log("跳过开通!");
-                        continue;
-                    }
-                    r = ts[idx];
-                    log("开始去完成任务...", task_desc);
-                    break;
-                }
-                if (r) {
-                    r.click();
-
-                } else {
-                    log("去完成的任务已做完！");
-                    k = 1;
-                    break;
-                }
-
-                if (textContains("签到").exists()) {
-                    log("签到完成！");
-                    continue;
-                }
-
-                sleep(1500 * speed);
-                if (textContains("当前淘宝账号").exists()) {
-                    log("暂不支持跳转其它APP！");
-                    back();
-                    continue;
-                }
-                swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
-                sleep(20000 * speed);
-                swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
-                textContains("完成").findOne(1500 * speed);
-                i++;
-                log("已完成第" + i + "次任务！");
-                back();
-                break;
-            case '去搜索':
-            case '去浏览':
-                sleep(500 * speed);
-                a.click();
-                sleep(1500 * speed);
-                if (id("taolive_follow_text").exists() || textContains("赚金币").exists()) {
-                    sleep(15000 * speed);
-                } else {
-                    swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
-                    sleep(3500 * speed);
-                    swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
-                    sleep(12000 * speed);
-                    swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
-                }
-                textContains("完成").findOne(1500 * speed);
-                i++;
-                log("已完成第" + i + "次任务！")
-                back();
-                break;
-            case '去观看':
-            case '去看看':
-                sleep(1000 * speed);
-                a.click();
-                sleep(25000 * speed);
-                descContains("完成").findOne(1500 * speed);
-                i++;
-                log("已完成第" + i + "次任务！")
-                back();
-                break;
-            default:
-                log("Powered by ROCEYS 20201021")
-                break;
+        if (skip) {
+            continue;
         }
-        sleep(2000 * speed);
+        if (target.text().includes('去完成')) {
+            return {
+                title: title,
+                target: target
+            };
+        }
     }
-});
+    return null;
+}
+
+while (true) {
+    var t = get_task();
+
+    if (t == null) {
+        log("任务全部完成!")
+        break;
+    }
+    log("进行任务：", t.title);
+    t.target.click();
+    sleep(1500 * speed)
+
+    if (textContains("签到").exists()) {
+        log("签到完成！");
+        continue;
+    }
+
+    if (id("taolive_follow_text").exists() || textContains("赚金币").exists()) {
+        sleep(15000 * speed);
+    } else {
+        swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
+        sleep(3500 * speed);
+        swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
+        sleep(12000 * speed);
+        swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
+    }
+
+    textContains("完成").findOne(1500 * speed);
+
+    back();
+
+    sleep(2000 * speed);
+}
 
 var catCoins = text("已领取").find();
 if (catCoins == null || (catCoins != null && catCoins.size() < 4)) {
@@ -184,20 +152,14 @@ var close = text("关闭").findOnce();
 if (null != close) {
     close.click();
     log("开始撸猫");
-    var num = dialogs.input("输入撸猫次数", 300);
-    if (num == null) {
-        num = 300;
-    }
-    var i = 1;
-    while (true) {
-        click(width / 2, height / 2);
-        log(i + "喵喵喵~");
-        if (i == num) {
-            break;
+    if (dialogs.confirm("撸猫?", "开始撸猫300次")) {
+        for (var i = 1; i <= 300; i++) {
+            click(width / 2, height / 2);
+            log(i + "喵喵喵~");
         }
-        i++;
+    } else {
+        log("取消撸猫")
     }
-
     if (!textContains("明天7点可领").exists()) {
         id("_3vkSFX").click();
         log("领取每日喵币完成!");
