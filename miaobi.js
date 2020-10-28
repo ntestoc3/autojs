@@ -15,6 +15,22 @@ var width = device.width;
 setScreenMetrics(width, height);
 var speed = 1;
 
+//启用按键监听，按下音量下键脚本结束
+function keyDetector() {
+    threads.start(function () { //在子进程中运行监听事件
+        events.observeKey();
+        events.on("key", function (code, event) {
+            var keyCodeStr = event.keyCodeToString(code);
+            if (keyCodeStr == "KEYCODE_VOLUME_DOWN") {
+                log("检测到音量下键，程序已结束。");
+                exit();
+            }
+        });
+    });
+}
+
+keyDetector()
+
 menu: while (true) {
     var choose = dialogs.select("选择脚本速度", "干就完了，给我上最快的", "网速不太好，别整太快了", "手机和网速都不咋滴", "我太难了，整个最慢的叭");
     switch (choose) {

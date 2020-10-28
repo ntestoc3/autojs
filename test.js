@@ -6,11 +6,26 @@ function click_bounds(obj) {
     log("click bounds centerk:", rect.centerX(), "y:", rect.centerY());
     click(rect.centerX(), rect.centerY());
 }
-var ts = textContains("寻宝箱").findOne().parent().child(2).children()
-log("len:", ts.length)
-for (let i = 0; i<ts.length; i++) {
-    ts[i].click()
-    sleep(3000)
-    back()
-    sleep(3000)
+
+//启用按键监听，按下音量下键脚本结束
+function keyDetector() {
+    threads.start(function () { //在子进程中运行监听事件
+        events.observeKey();
+        events.on("key", function (code, event) {
+            var keyCodeStr = event.keyCodeToString(code);
+            if (keyCodeStr == "KEYCODE_VOLUME_DOWN") {
+                log("检测到音量下键，程序已结束。");
+                exit();
+            }
+        });
+    });
 }
+
+keyDetector();
+
+speed = 1
+
+text("可领金币").click()
+
+
+log("over.") 
