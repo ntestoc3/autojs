@@ -69,9 +69,10 @@ function click_bounds(obj) {
     log("click,bounds:", rect)
     if (y >= height - 20) {
         log("点击超出范围")
-        swipe(width / 1, height, width / 2, height - 500, 800 * speed);
+        let dist = 300
+        swipe(width / 2, height - 10, width / 2, height - 10 - dist, 800 * speed);
         sleep(1000 * speed)
-        click_bounds(obj)
+        click(x, y - dist)
     } else {
         log("click bounds pos x:", x, " y:", y);
         click(x, y)
@@ -80,7 +81,10 @@ function click_bounds(obj) {
 
 function get_task() {
     sleep(3000 * speed);
-    var obj = text("去完成").findOnce();
+    var obj = text("去完成").findOnce(2);
+    if (obj == null) {
+        return null;
+    }
     var ts = obj.parent().children();
     for (var i = 0; i < ts.length; i += 4) {
         var title = ts[i + 1].text();
@@ -204,6 +208,24 @@ for (let i = 0; i < 30; i++) {
 }
 log("开宝箱结束!")
 
+function choujiang() {
+    let chou = textContains("可抽奖次数").findOnce()
+    if (chou != null) {
+        let info = chou.parent()
+        while (info.child(1).text() != "0") {
+            log("抽奖:", info.child(1).text())
+            info.child(3).click()
+            sleep(6000 * speed)
+            textContains("恭喜你").waitFor()
+            let f = textContains("恭喜你").findOnce().parent().parent().parent()
+            if (f != null) {
+                f.child(1).click()
+            }
+            sleep(1000 * speed)
+        }
+
+    }
+}
 
 var city_count = 0
 
@@ -225,6 +247,7 @@ function bantu_jinbi(cities) {
                     sleep(3000 * speed);
                 }
             }
+            choujiang()
             back();
             log("结束访问 ", c.text())
             city_count++

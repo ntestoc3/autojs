@@ -25,7 +25,25 @@ keyDetector();
 
 speed = 1
 
-text("可领金币").click()
+function choujiang(){
+    let chou = textContains("可抽奖次数").findOnce()
+    if (chou != null) {
+        let info = chou.parent()
+        while (info.child(1).text() != "0") {
+            log("抽奖:", info.child(1).text())
+            info.child(3).click()
+            sleep(6000*speed)
+            textContains("恭喜你").waitFor()
+            let f = textContains("恭喜你").findOnce().parent().parent().parent()
+            if (f != null) {
+                f.child(1).click()
+            }
+            sleep(1000*speed)
+        }
 
+    }
+}
+
+choujiang()
 
 log("over.") 
