@@ -24,5 +24,6 @@ function keyDetector() {
 keyDetector();
 
 speed = 1
-
+log(currentPackage());      
+log(currentActivity())
 log("over.") 

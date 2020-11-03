@@ -109,31 +109,33 @@ function get_task() {
     return null;
 }
 
+const jd_package = "com.jingdong.app.mall"
+
 function go_jdview(data) {
     app.startActivity({
         action: "android.intent.action.VIEW",
         data: "openapp.jdmobile://virtual?params=" + encodeURI(JSON.stringify(data)),
-        packageName: "com.jingdong.app.mall"
+        packageName: jd_package
     });
 }
 
-sleep(1000 * speed);
-log("正在打开京东全民营业");
-go_jdview({
-    "category": "jump",
-    "action": "to",
-    "des": "m",
-    "url": "https://wbbny.m.jd.com/babelDiy/Zeus/4SJUHwGdUQYgg94PFzjZZbGZRjDd/index.html?babelChannel=",
-    "sourceType": "JSHOP_SOURCE_TYPE",
-    "sourceValue": "JSHOP_SOURCE_VALUE",
-    "M_sourceFrom": "mxz",
-    "msf_type": "auto"
-})
-sleep(5000 * speed);
-text("领金币").waitFor()
-text("领金币").findOne().click();
-
-var i = 0;
+function open_yingye() {
+    sleep(1000 * speed);
+    log("正在打开京东全民营业");
+    go_jdview({
+        "category": "jump",
+        "action": "to",
+        "des": "m",
+        "url": "https://wbbny.m.jd.com/babelDiy/Zeus/4SJUHwGdUQYgg94PFzjZZbGZRjDd/index.html?babelChannel=",
+        "sourceType": "JSHOP_SOURCE_TYPE",
+        "sourceValue": "JSHOP_SOURCE_VALUE",
+        "M_sourceFrom": "mxz",
+        "msf_type": "auto"
+    })
+    sleep(5000 * speed);
+    text("领金币").waitFor()
+    text("领金币").findOne().click();
+}
 
 function check_net() {
     if (text("重新连接").exists()) {
@@ -141,6 +143,10 @@ function check_net() {
         sleep(3000 * speed)
     }
 }
+
+
+open_yingye()
+var i = 0;
 
 while (true) {
     var t = get_task();
@@ -150,8 +156,10 @@ while (true) {
     i++;
     log("开始第" + i + "次任务!");
     log("开始任务:", t.title, "desc:", t.desc);
+    check_net()
     t.target.click();
     sleep(3000 * speed)
+    check_net()
     if (t.desc.includes('8秒')) {
         log("浏览并等待8秒...")
         swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
@@ -160,8 +168,7 @@ while (true) {
         sleep(5000 * speed);
         textContains("获得").findOne(1500 * speed);
     } else if (t.desc.includes('浏览5个商品')) {
-        t.target.click();
-        sleep(3000 * speed);
+        log("浏览商品")
         var shops = textContains(".jpg").findOne().parent().parent().parent().children();
         for (var i = 0; i < 5; i++) {
             shops[i].show();
@@ -172,10 +179,7 @@ while (true) {
             sleep(2000 * speed);
         }
     } else if (t.desc.includes('成功加购')) {
-        log("加购操作...")
-        t.target.click();
-        sleep(3000 * speed);
-        check_net()
+        log("加购操作")
         var adds = idContains("jmdd-react-smash").find()
         for (var i = 0; i < 5; i++) {
             adds[i].click();
@@ -184,9 +188,7 @@ while (true) {
         back();
         sleep(1000 * speed);
     } else if (t.desc.includes('成功入会')) {
-        t.target.click();
-        sleep(3000 * speed);
-        check_net()
+        log("入会任务")
         if (text("去完成").exists()) {
             log("已入会");
             continue;
@@ -198,10 +200,12 @@ while (true) {
         sleep(1000 * speed);
     }
 
-    check_net()
     while (!text("去完成").exists()) {
         back();
         sleep(3000 * speed);
+        if (currentPackage() != jd_package) {
+            open_yingye()
+        }
     }
 }
 
@@ -238,22 +242,37 @@ function choujiang() {
 
 var city_count = 0
 
+function to_bantu() {
+    log("开始营业版图")
+    text("可领金币").click()
+    sleep(3000 * speed)
+}
+
+function to_city(c) {
+    c.click()
+    sleep(3000 * speed)
+    text("免费领金币").waitFor()
+}
+
 function bantu_jinbi(cities) {
     cities.forEach(function (city) {
         if (city.childCount() >= 3) {
             let c = city.child(2)
             log("访问城市:", c.text())
-            c.click()
-            sleep(3000 * speed)
-
-            text("免费领金币").waitFor()
+            to_city(c)
             var ts = text("去完成").find()
             for (let i = 0; i < ts.length; i++) {
                 ts[i].click()
-                sleep(1000 * speed)
+                sleep(3000 * speed)
                 while (!text("免费领金币").exists()) {
                     back();
                     sleep(3000 * speed);
+                    if (currentPackage() != jd_package) {
+                        log("掉线重连")
+                        open_yingye()
+                        to_bantu()
+                        to_city(c)
+                    }
                 }
             }
             choujiang()
@@ -265,9 +284,8 @@ function bantu_jinbi(cities) {
     })
 }
 
-log("开始营业版图")
-text("可领金币").click()
-sleep(3000 * speed)
+
+to_bantu()
 var bantu = text("北京").findOne().parent().parent().children()
 bantu_jinbi(bantu)
 bantu = text("热爱城").findOne().parent().parent().children()
