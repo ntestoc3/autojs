@@ -209,6 +209,11 @@ while (true) {
     }
 }
 
+while (text("领取奖励").exists()) {
+    text("领取奖励").click()
+    sleep(3000 * speed)
+}
+
 log("开宝箱")
 var ts = textContains("寻宝箱").findOne().parent().child(2).children()
 log("待开宝箱:", ts.length, "个")
@@ -264,16 +269,14 @@ function bantu_jinbi(cities) {
             for (let i = 0; i < ts.length; i++) {
                 ts[i].click()
                 sleep(3000 * speed)
-                while (!text("免费领金币").exists()) {
+                while (!text("已完成").exists()) {
                     back();
                     sleep(3000 * speed);
-                    if (currentPackage() != jd_package) {
-                        log("掉线重连")
-                        open_yingye()
-                        to_bantu()
+                    if (textContains("开店进度").exists())  {
                         to_city(c)
+                        break
                     }
-                }
+               }
             }
             choujiang()
             back();
