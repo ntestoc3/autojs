@@ -56,12 +56,6 @@ try {
     dialogs.alert("当前auto.js版本为4.0以下版本，无法检测是否开启无障碍模式，请确保无障碍模式已经打开");
 }
 
-sleep(1000 * speed);
-log("正在打开京东");
-launch("com.jingdong.app.mall");
-log("等待5秒...如有多开请尽快手动选择进入");
-sleep(5000 * speed);
-
 function click_bounds(obj) {
     let rect = obj.bounds();
     let x = rect.centerX()
@@ -69,8 +63,9 @@ function click_bounds(obj) {
     log("click,bounds:", rect)
     if (y >= height - 20) {
         log("点击超出范围")
-        let dist = 300
-        swipe(width / 2, height - 10, width / 2, height - 10 - dist, 800 * speed);
+        let dist = Math.abs(rect.height())
+        log("dist:", dist)
+        swipe(width / 2, height - 100, width / 2, height - 100 - dist, 800 * speed);
         sleep(1000 * speed)
         click(x, y - dist)
     } else {
@@ -98,6 +93,10 @@ function get_task() {
             log("跳过商圈!");
             continue;
         }
+        if (title.includes("小程序")) {
+            log("跳过小程序")
+            continue
+        }
         if (target.text().includes("已完")) {
             continue;
         }
@@ -110,19 +109,28 @@ function get_task() {
     return null;
 }
 
-var act = desc("浮层活动");
-if (act != null) {
-    log("正在自动进入活动页面");
-    click_bounds(act.findOne())
-    sleep(1000 * speed);
-    if (act.exists()) {
-        click_bounds(act.findOne());
-    }
-    sleep(3000 * speed);;
-} else {
-    log("正在等待进入活动页面");
-    log("请手动进入活动页面");
+function go_jdview(data) {
+    app.startActivity({
+        action: "android.intent.action.VIEW",
+        data: "openapp.jdmobile://virtual?params=" + encodeURI(JSON.stringify(data)),
+        packageName: "com.jingdong.app.mall"
+    });
 }
+
+sleep(1000 * speed);
+log("正在打开京东全民营业");
+go_jdview({
+    "category": "jump",
+    "action": "to",
+    "des": "m",
+    "url": "https://wbbny.m.jd.com/babelDiy/Zeus/4SJUHwGdUQYgg94PFzjZZbGZRjDd/index.html?babelChannel=",
+    "sourceType": "JSHOP_SOURCE_TYPE",
+    "sourceValue": "JSHOP_SOURCE_VALUE",
+    "M_sourceFrom": "mxz",
+    "msf_type": "auto"
+})
+sleep(5000 * speed);
+text("领金币").waitFor()
 text("领金币").findOne().click();
 
 var i = 0;
@@ -143,6 +151,7 @@ while (true) {
     log("开始第" + i + "次任务!");
     log("开始任务:", t.title, "desc:", t.desc);
     t.target.click();
+    sleep(3000 * speed)
     if (t.desc.includes('8秒')) {
         log("浏览并等待8秒...")
         swipe(width / 2, height - 500, width / 2, 0, 800 * speed);
