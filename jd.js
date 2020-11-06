@@ -214,17 +214,30 @@ while (text("领取奖励").exists()) {
     sleep(3000 * speed)
 }
 
-log("开宝箱")
-var ts = textContains("寻宝箱").findOne().parent().child(2).children()
-log("待开宝箱:", ts.length, "个")
-for (let i = 0; i < 30; i++) {
-    log("宝箱", i)
-    ts[i].click()
-    sleep(2000 * speed)
-    back()
-    sleep(2000 * speed)
+function todays() {
+    let d = new Date()
+    return d.toDateString()
 }
-log("开宝箱结束!")
+
+var storage = storages.create("JD_AUTO")
+let baoxiang_day = storage.get("baoxiang", false)
+
+if (!baoxiang_day || baoxiang_day != todays()) {
+    log("开宝箱")
+    var ts = textContains("寻宝箱").findOne().parent().child(2).children()
+    log("待开宝箱:", ts.length, "个")
+    for (let i = 0; i < 30; i++) {
+        log("宝箱", i)
+        ts[i].click()
+        sleep(2000 * speed)
+        back()
+        sleep(2000 * speed)
+    }
+    log("开宝箱结束!")
+    storage.put("baoxiang", todays())
+} else {
+    log("今天宝箱已经开过")
+}
 
 function choujiang() {
     let chou = textContains("可抽奖次数").findOnce()
@@ -272,11 +285,11 @@ function bantu_jinbi(cities) {
                 while (!text("已完成").exists()) {
                     back();
                     sleep(3000 * speed);
-                    if (textContains("开店进度").exists())  {
+                    if (textContains("开店进度").exists()) {
                         to_city(c)
                         break
                     }
-               }
+                }
             }
             choujiang()
             back();

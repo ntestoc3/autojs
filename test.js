@@ -22,8 +22,16 @@ function keyDetector() {
 }
 
 keyDetector();
+function todays() {
+    let d = new Date()
+    return d.toDateString()
+}
 
+var storage = storages.create("JD_AUTO")
+
+
+storage.put("baoxiang", todays())
 speed = 1
-log(currentPackage());      
+log(currentPackage());
 log(currentActivity())
 log("over.") 
